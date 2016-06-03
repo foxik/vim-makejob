@@ -1,52 +1,56 @@
 # Neovim MakeJob
-I've used [other](/scrooloose/syntastic) [build
-solutions](/neomake/neomake) to lint my files, and while they've
-worked as advertized, they're not what I  would call minimal. Even Tim
-Pope's venerable [dispatch.vim](/tpope/vim-dispatch) suffers from
-features that I can't seem to figure out. Plus, I've moved to
-[Neovim](/neovim/neovim) as my primary editor, and dispatch.vim is
-designed with classic [Vim](/vim/vim) in mind. To wit, Neovim offers
-asynchronous jobs out of the box, so tpope's clever dispatch methods are
-no longer necessary.
-
-With minimalism as a goal, I've done my best with _MakeJob_ to implement
-asynchronous `:make` and `:lmake` for Neovim. That's all _MakeJob_ does,
-and that's all I intend for it to do. It will not configure compiler
-settings for you. Neovim (like Vim before it) already gives you
-everything you need to do that work automatically (i.e. `autocmd`).
+There are plenty of [other](/scrooloose/syntastic) [build
+solutions](/neomake/neomake) for [Vim](/vim/vim) and
+[Neovim](/neovim/neovim), many of them offering feature sets that
+overlap with those the editor already offers. With minimalism as a goal,
+_MakeJob_ implements asynchronous `:make` and `:lmake` for Neovim in
+just over 100 lines of Vimscript.
 
 ## Goals
 1. Implement a minimal solution for asynchronous `:make` and `:lmake`.
    No unnecessary features.
-2. Let Neovim be Neovim. Use compiler plugins to configure our builders.
+2. Let Neovim be Neovim. Use compiler plugins to configure `makeprg` and
+   `errorformat`. Use the Quickfix or Location List window to view
+   findings.
+3. Complete feature parity with `:make` and `:lmake` per the steps
+   outlined in `:help make`. Still todo are `autowrite`,
+   `QuickFixCmdPre` and `QuickFixCmdPost`.
 
-## TODO - Installation
-Pathogen
-Vundle
+## Installation
+### Pathogen
+`cd ~/.config/nvim/bundle`   
+`git clone https://github.com/djmoch/nvim-makejob.git`
+
+### Plug.vim
+`Plug 'djmoch/nvim-makejob'`
 
 Most other plugin managers will resemble one of these two.
 
 ## Usage
 ### The Short Version
 Neovim has `:make` and `:lmake`. Replace those calls with `:MakeJob` and
-`:LmakeJob`. Call it a day.
+`:LmakeJob`. Call it a day. If `:MakeJob` reports findings, use `:copen`
+to view them, and likewise `:lopen` for `:LmakeJob`.
 
 ### The Less Short Version
+Users of Syntastic and Neomake may not be aware that Neovim offers many
+of their features out of the box. Here's a brief rundown.
+
 With no prior configuration, `:make` will run the `make` program with no
 arguments, and populate the Quickfix list with any errors the process
 encounters. It's possible to change that behavior in one of two ways.
-The hard way is to manually use `:set makeprg` to change the program to
+The hard way is to manually use `:set makeprg` to change the program 
 something else, and _then_ use `:set errorformat` to configure the
 format of the errors to look for. This gets pretty hairy, and so
-everyone is better off trying to avoid this in favor of the easy way:
-compiler plugins.
+we're all better off trying to avoid this in favor of the easy way:
+compiler plugins. Using a compiler plugin easy (ex: `:compiler javac`),
+they abstract away the work of remembering the `errorformat`, they're
+extendable, and many are already included in Neovim. _MakeJob_ uses
+compilers.
 
-__TODO - Describe Compilers__
-
-## Automatic Configuration
-I alluded earlier to the possibility of using `autocmd` to set your
-compiler automatically. Just for the sake of completeness, an example of
-that trick would like like this:
+Also, it's possible to use `autocmd` to set the compiler of your choice
+ automatically. Just for the sake of completeness, an example of that
+ trick would like like this:
 
 `autocmd! FileType python compiler pylint`
 
@@ -54,8 +58,20 @@ Add that line to your `init.vim` and you're good to go for Python files
 (assuming you have a pylint compiler which hey, if you need one I've
 [got you covered](/djmoch/vim-compiler)).
 
+Additionally, if you'd like _MakeJob_ to run a linter automatically when
+you write a file, then something like the following will to the trick.
+
+`autocmd BufWritePost * :LmakeJob<CR>`
+
+For more granular control, you can set this trigger on a file-type basis
+with something like the following:
+
+`autocmd BufWritePost *.py :LmakeJob<CR>`
+
 ## Neovim Documentation
-If any of what I discuss above doesn't make sense, then take a look at
+Part of the goal of _MakeJob_ is to minimize the size of the plugin by
+using features Neovim already offers whenever possible. To that end, if
+any of what foregoing discussion doesn't make sense, then take a look at
 the help documentation in Neovim. Of particular interest will probably
 be the following:
 
@@ -64,3 +80,6 @@ be the following:
 3. `:h errorformat`
 4. `:h compiler`
 5. `:h quickfix`
+
+## License
+MIT - See the LICENSE file for more information
