@@ -1,0 +1,33 @@
+*makejob.txt* Minimal, asynchronous make and lmake for Neovim
+
+Author: Daniel Moch <daniel@danielmoch.com>
+License: MIT (see LICENSE file for details)
+
+INTRODUCTION                                    *makejob* *nvim-makejob*
+
+There are plenty of other build solutions for Vim and Neovim, many of them
+offering feature sets that overlap with those the editor already offers. With
+minimalism as a goal, MakeJob implements asynchronous |:make| and |:lmake| for
+Neovim in just over 100 lines of Vimscript.
+
+Here are your new make commands.
+
+                                                *makejob-MakeJob*
+MakeJob [{bufname}]         Start a makejob on the specified buffer,
+                            populating findings in the quickfix list.
+                            |makeprg| and |errorformat| must be set before
+                            MakeJob is called. {bufname}, if specified, is the
+                            name of the file to make, and is appended to the
+                            end of |makeprg|. MakeJob currently only expands
+                            the special character % (see |_%|).
+
+                                                *makejob-LmakeJob*
+LmakeJob [{bufname}]        Same as ":MakeJob", except the location list for
+                            the current window is used instead of the quickfix
+                            list.
+
+ABOUT                                           *makejob-about*
+
+More details can be found in README.md or by navigating to:
+
+    https://github.com/djmoch/nvim-makejob
