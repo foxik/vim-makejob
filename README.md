@@ -1,10 +1,11 @@
 # Neovim MakeJob
-There are plenty of [other](/scrooloose/syntastic) [build
-solutions](/neomake/neomake) for [Vim](/vim/vim) and
-[Neovim](/neovim/neovim), many of them offering feature sets that
-overlap with those the editor already offers. With minimalism as a goal,
-_MakeJob_ implements asynchronous `:make` and `:lmake` for Neovim in
-just over 100 lines of Vimscript.
+There are plenty of [other](http://github.com/scrooloose/syntastic) [build
+solutions](http://github.com/neomake/neomake) for
+[Vim](http://github.com/vim/vim) and
+[Neovim](http://github.com/neovim/neovim), many of them offering feature
+sets that overlap with those the editor already offers. With minimalism
+as a goal, _MakeJob_ implements asynchronous `:make` and `:lmake` for
+Neovim in just over 100 lines of Vimscript.
 
 ## Goals
 1. Implement a minimal solution for asynchronous `:make` and `:lmake`.
@@ -56,7 +57,7 @@ Also, it's possible to use `autocmd` to set the compiler of your choice
 
 Add that line to your `init.vim` and you're good to go for Python files
 (assuming you have a pylint compiler which hey, if you need one I've
-[got you covered](/djmoch/vim-compiler)).
+[got you covered](http://github.com/djmoch/vim-compiler)).
 
 Additionally, if you'd like _MakeJob_ to run a linter automatically when
 you write a file, then something like the following will to the trick.
@@ -82,4 +83,4 @@ be the following:
 5. `:h quickfix`
 
 ## License
-MIT - See the LICENSE file for more information
+MIT - See the [LICENSE](/LICENSE) file for more information
