@@ -1,4 +1,8 @@
-# Neovim MakeJob
+# Vim MakeJob
+
+__NOTE:__ This repository is undergoing conversion from supporting Neovim
+to supporting Vim. Please excuse the messiness of the documentation.
+
 There are plenty of [other](http://github.com/scrooloose/syntastic) [build
 solutions](http://github.com/neomake/neomake) for
 [Vim](http://github.com/vim/vim) and
