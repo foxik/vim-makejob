@@ -1,14 +1,14 @@
-*makejob.txt* Minimal, asynchronous make and lmake for Neovim
+*makejob.txt* Minimal, asynchronous make and lmake for Vim
 
 Author: Daniel Moch <daniel@danielmoch.com>
 License: MIT (see LICENSE file for details)
 
-INTRODUCTION                                    *makejob* *nvim-makejob*
+INTRODUCTION                                    *makejob* *vim-makejob*
 
-There are plenty of other build solutions for Vim and Neovim, many of them
-offering feature sets that overlap with those the editor already offers. With
-minimalism as a goal, MakeJob implements asynchronous |:make| and |:lmake| for
-Neovim in just over 100 lines of Vimscript.
+There are plenty of other build solutions for Vim and Vim, many of them
+offering feature sets that overlap with those the editor already offers.
+With minimalism as a goal, MakeJob implements asynchronous |:make| and
+|:lmake| for Vim in just over 100 lines of Vimscript.
 
 Here are your new make commands.
 
@@ -30,4 +30,4 @@ ABOUT                                           *makejob-about*
 
 More details can be found in README.md or by navigating to:
 
-    https://github.com/djmoch/nvim-makejob
+    https://github.com/djmoch/vim-makejob

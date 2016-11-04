@@ -1,57 +1,57 @@
 "
-" TITLE:   NVIM-MAKEJOB
+" TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 0.1
+" VERSION: 0.2
 "
-if exists('g:loaded_makejob') || !has('nvim')
+if exists('g:loaded_makejob') || version < 800
     finish
 endif
 let g:loaded_makejob = 1
 
 let s:jobinfo = {}
 
-function! s:JobHandler(job_id, data, event_type) abort
-    if a:event_type == 'stdout' && type(a:data) == type([])
-        let s:jobinfo[a:job_id]['output'] =
-                    \ s:jobinfo[a:job_id]['output'][:-2] +
-                    \ [s:jobinfo[a:job_id]['output'][-1] . get(a:data,
-                    \ 0, '')] +
-                    \ a:data[1:]
-    elseif a:event_type == 'exit'
-        let is_lmake = s:jobinfo[a:job_id]['lmake']
-        let output = s:jobinfo[a:job_id]['output']
+function! s:Function(name)
+    return substitute(a:name, '^s:', matchstr(expand('<sfile>'), 
+                \'<SNR>\d\+_\zefunction$'),'')
+endfunction
 
-        " For reasons I don't understand, copying and re-writing
-        " errorformat fixes a lot of parsing errors
-        let tempefm = &errorformat
-        let &errorformat = tempefm
+function! s:JobHandler(channel) abort
+    let is_lmake = s:jobinfo[split(a:channel)[1]]['lmake']
+    let output = []
+    while ch_status(a:channel, {'part': 'out'}) == 'buffered'
+        let output += [ch_read(a:channel)]
+    endwhile
 
-        if is_lmake
-            lgetexpr output
-        else
-            cgetexpr output
-        endif
+    " For reasons I don't understand, copying and re-writing
+    " errorformat fixes a lot of parsing errors
+    let tempefm = &errorformat
+    let &errorformat = tempefm
 
-        let initqf = is_lmake ? getloclist(winnr()) : getqflist()
-        let makeoutput = []
-        let idx = 0
-        while idx < len(initqf)
-            let qfentry = initqf[idx]
-            if qfentry['valid']
-                let makeoutput += [qfentry]
-            endif
-            let idx += 1
-        endwhile
-
-        if is_lmake
-            call setloclist(winnr(), makeoutput, 'r')
-        else
-            call setqflist(makeoutput, 'r')
-        endif
-
-        echo s:jobinfo[a:job_id]['prog']." ended with "
-                    \ .len(makeoutput)." findings"
+    if is_lmake
+        lgetexpr output
+    else
+        cgetexpr output
     endif
+
+    let initqf = is_lmake ? getloclist(winnr()) : getqflist()
+    let makeoutput = []
+    let idx = 0
+    while idx < len(initqf)
+        let qfentry = initqf[idx]
+        if qfentry['valid']
+            let makeoutput += [qfentry]
+        endif
+        let idx += 1
+    endwhile
+
+    if is_lmake
+        call setloclist(winnr(), makeoutput, 'r')
+    else
+        call setqflist(makeoutput, 'r')
+    endif
+
+    echo s:jobinfo[split(a:channel)[1]]['prog']." ended with "
+                \ .len(makeoutput)." findings"
 endfunction
 
 function! s:NumChars(string, char, ...)
@@ -101,15 +101,10 @@ function! s:MakeJob(lmake, ...)
             let joblist += [a:1]
         endif
     endif
-    let opts = {
-                \ 'on_stdout': function('s:JobHandler'),
-                \ 'on_stderr': function('s:JobHandler'),
-                \ 'on_exit': function('s:JobHandler')
-                \ }
-    let jobid = jobstart(joblist, opts)
-    let s:jobinfo[jobid] = {'prog': joblist[0], 'output': [''],
-                \ 'lmake': a:lmake}
-    echo s:jobinfo[jobid]['prog'].' started'
+    let opts = { 'close_cb' : s:Function('s:JobHandler') }
+    let job = job_start(joblist, opts)
+    let s:jobinfo[split(job_getchannel(job))[1]] = {'prog': joblist[0],'lmake': a:lmake}
+    echo s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
 endfunction
 
 command! -nargs=? MakeJob call s:MakeJob(0,<f-args>)

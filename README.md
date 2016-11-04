@@ -1,20 +1,16 @@
 # Vim MakeJob
 
-__NOTE:__ This repository is undergoing conversion from supporting Neovim
-to supporting Vim. Please excuse the messiness of the documentation.
-
-There are plenty of [other](http://github.com/scrooloose/syntastic) [build
-solutions](http://github.com/neomake/neomake) for
-[Vim](http://github.com/vim/vim) and
-[Neovim](http://github.com/neovim/neovim), many of them offering feature
-sets that overlap with those the editor already offers. With minimalism
-as a goal, _MakeJob_ implements asynchronous `:make` and `:lmake` for
-Neovim in just over 100 lines of Vimscript.
+There are plenty of [other build
+solutions](http://github.com/scrooloose/syntastic) for
+[Vim](http://github.com/vim/vim), many of them offering feature sets
+that overlap with those the editor already offers. With minimalism as a
+goal, _MakeJob_ implements asynchronous `:make` and `:lmake` for Vim in
+just over 100 lines of Vimscript.
 
 ## Goals
 1. Implement a minimal solution for asynchronous `:make` and `:lmake`.
    No unnecessary features.
-2. Let Neovim be Neovim. Use compiler plugins to configure `makeprg` and
+2. Let Vim be Vim. Use compiler plugins to configure `makeprg` and
    `errorformat`. Use the Quickfix or Location List window to view
    findings.
 3. Complete feature parity with `:make` and `:lmake` per the steps
@@ -23,22 +19,22 @@ Neovim in just over 100 lines of Vimscript.
 
 ## Installation
 ### Pathogen
-`cd ~/.config/nvim/bundle`   
-`git clone https://github.com/djmoch/nvim-makejob.git`
+`cd ~/.vim/bundle`   
+`git clone https://github.com/djmoch/vim-makejob.git`
 
 ### Plug.vim
-`Plug 'djmoch/nvim-makejob'`
+`Plug 'djmoch/vim-makejob'`
 
 Most other plugin managers will resemble one of these two.
 
 ## Usage
 ### The Short Version
-Neovim has `:make` and `:lmake`. Replace those calls with `:MakeJob` and
+Vim has `:make` and `:lmake`. Replace those calls with `:MakeJob` and
 `:LmakeJob`. Call it a day. If `:MakeJob` reports findings, use `:copen`
 to view them, and likewise `:lopen` for `:LmakeJob`.
 
 ### The Less Short Version
-Users of Syntastic and Neomake may not be aware that Neovim offers many
+Users of Syntastic and Neomake may not be aware that Vim offers many
 of their features out of the box. Here's a brief rundown.
 
 With no prior configuration, `:make` will run the `make` program with no
@@ -50,7 +46,7 @@ format of the errors to look for. This gets pretty hairy, and so
 we're all better off trying to avoid this in favor of the easy way:
 compiler plugins. Using a compiler plugin easy (ex: `:compiler javac`),
 they abstract away the work of remembering the `errorformat`, they're
-extendable, and many are already included in Neovim. _MakeJob_ uses
+extendable, and many are already included in Vim. _MakeJob_ uses
 compilers.
 
 Also, it's possible to use `autocmd` to set the compiler of your choice
@@ -73,11 +69,11 @@ with something like the following:
 
 `autocmd BufWritePost *.py :LmakeJob<CR>`
 
-## Neovim Documentation
+## Vim Documentation
 Part of the goal of _MakeJob_ is to minimize the size of the plugin by
-using features Neovim already offers whenever possible. To that end, if
+using features Vim already offers whenever possible. To that end, if
 any of what foregoing discussion doesn't make sense, then take a look at
-the help documentation in Neovim. Of particular interest will probably
+the help documentation in Vim. Of particular interest will probably
 be the following:
 
 1. `:h make`
