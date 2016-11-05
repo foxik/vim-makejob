@@ -34,8 +34,8 @@ Vim has `:make` and `:lmake`. Replace those calls with `:MakeJob` and
 to view them, and likewise `:lopen` for `:LmakeJob`.
 
 ### The Less Short Version
-Users of Syntastic and Neomake may not be aware that Vim offers many
-of their features out of the box. Here's a brief rundown.
+Users of Syntastic may not be aware that Vim offers many of the same
+features out of the box. Here's a brief rundown.
 
 With no prior configuration, `:make` will run the `make` program with no
 arguments, and populate the Quickfix list with any errors the process
@@ -55,7 +55,7 @@ Also, it's possible to use `autocmd` to set the compiler of your choice
 
 `autocmd! FileType python compiler pylint`
 
-Add that line to your `init.vim` and you're good to go for Python files
+Add that line to your `.vimrc` and you're good to go for Python files
 (assuming you have a pylint compiler which hey, if you need one I've
 [got you covered](http://github.com/djmoch/vim-compiler)).
 
