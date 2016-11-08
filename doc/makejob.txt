@@ -20,6 +20,8 @@ MakeJob [{bufname}]         Start a makejob on the specified buffer,
                             name of the file to make, and is appended to the
                             end of |makeprg|. MakeJob currently only expands
                             the special character % (see |_%|).
+                            |autowrite|, |QuickFixCmdPre|, and
+                            |QuickFixCmdPost| all work as expected.
 
                                                 *makejob-LmakeJob*
 LmakeJob [{bufname}]        Same as ":MakeJob", except the location list for

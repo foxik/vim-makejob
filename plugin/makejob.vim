@@ -1,9 +1,10 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 0.2
+" VERSION: 0.3
 "
-if exists('g:loaded_makejob') || version < 800
+if exists('g:loaded_makejob') || version < 800 || !has('job') ||
+            \ !has('channel')
     finish
 endif
 let g:loaded_makejob = 1
@@ -46,8 +47,10 @@ function! s:JobHandler(channel) abort
 
     if is_lmake
         call setloclist(winnr(), makeoutput, 'r')
+        silent doautocmd QuickFixCmdPost lmake
     else
         call setqflist(makeoutput, 'r')
+        silent doautocmd QuickFixCmdPost make
     endif
 
     echo s:jobinfo[split(a:channel)[1]]['prog']." ended with "
@@ -102,6 +105,17 @@ function! s:MakeJob(lmake, ...)
         endif
     endif
     let opts = { 'close_cb' : s:Function('s:JobHandler') }
+
+    if a:lmake
+        silent doautocmd QuickFixCmdPre lmake
+    else
+        silent doautocmd QuickFixCmdPre make
+    endif
+
+    if &autowrite
+        silent write
+    endif
+
     let job = job_start(joblist, opts)
     let s:jobinfo[split(job_getchannel(job))[1]] = {'prog': joblist[0],'lmake': a:lmake}
     echo s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'

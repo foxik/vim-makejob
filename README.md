@@ -14,8 +14,8 @@ just over 100 lines of Vimscript.
    `errorformat`. Use the Quickfix or Location List window to view
    findings.
 3. Complete feature parity with `:make` and `:lmake` per the steps
-   outlined in `:help make`. Still todo are `autowrite`,
-   `QuickFixCmdPre` and `QuickFixCmdPost`.
+   outlined in `:help make`. `autowrite`, `QuickFixCmdPre` and
+   `QuickFixCmdPost` work as expected.
 
 ## Installation
 ### Pathogen
