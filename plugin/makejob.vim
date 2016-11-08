@@ -12,7 +12,7 @@ let s:jobinfo = {}
 
 function! s:Function(name)
     return substitute(a:name, '^s:', matchstr(expand('<sfile>'), 
-                \'<SNR>\d\+_\zefunction$'),'')
+                \'<SNR>\d\+_\ze[fF]unction$'),'')
 endfunction
 
 function! s:JobHandler(channel) abort
