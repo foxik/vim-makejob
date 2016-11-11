@@ -35,73 +35,33 @@ function! s:JobHandler(channel) abort
     endif
 
     let initqf = is_lmake ? getloclist(winnr()) : getqflist()
-    let makeoutput = []
+    let makeoutput = 0
     let idx = 0
     while idx < len(initqf)
         let qfentry = initqf[idx]
         if qfentry['valid']
-            let makeoutput += [qfentry]
+            let makeoutput += 1
         endif
         let idx += 1
     endwhile
 
     if is_lmake
-        call setloclist(winnr(), makeoutput, 'r')
         silent doautocmd QuickFixCmdPost lmake
     else
-        call setqflist(makeoutput, 'r')
         silent doautocmd QuickFixCmdPost make
     endif
 
     echo s:jobinfo[split(a:channel)[1]]['prog']." ended with "
-                \ .len(makeoutput)." findings"
-endfunction
-
-function! s:NumChars(string, char, ...)
-    if a:0
-        let idx = stridx(a:string, a:char, a:1 + 1)
-        let recursenum = a:2
-    else
-        let idx = stridx(a:string, a:char)
-        let recursenum = 0
-    endif
-    if idx >= 0
-        return s:NumChars(a:string, a:char, idx, recursenum + 1)
-    else
-        return recursenum
-    endif
-endfunction
-
-function! s:NormalizeJobList(joblist)
-    let idx = 0
-    let normalized = []
-    while idx < len(a:joblist)
-        let param = a:joblist[idx]
-        if s:NumChars(param, '"') == 1
-            let idx2 = idx + 1
-            for nextparam in a:joblist[idx2:]
-                if stridx(nextparam, '"') >= 0
-                    let normalized += [join(a:joblist[idx:idx2])]
-                    let idx = idx2
-                    break
-                endif
-                let idx2 += 1
-            endfor
-        else
-            let normalized += [param]
-        endif
-        let idx += 1
-    endwhile
-    return normalized
+                \ .makeoutput." findings"
 endfunction
 
 function! s:MakeJob(lmake, ...)
-    let joblist = s:NormalizeJobList(split(&makeprg))
+    let make = &makeprg
     if a:0
         if a:1 == '%'
-            let joblist += [bufname(a:1)]
+            let make = make.' '.bufname(a:1)
         else
-            let joblist += [a:1]
+            let make = make.' '.a:1
         endif
     endif
     let opts = { 'close_cb' : s:Function('s:JobHandler') }
@@ -116,8 +76,8 @@ function! s:MakeJob(lmake, ...)
         silent write
     endif
 
-    let job = job_start(joblist, opts)
-    let s:jobinfo[split(job_getchannel(job))[1]] = {'prog': joblist[0],'lmake': a:lmake}
+    let job = job_start(make, opts)
+    let s:jobinfo[split(job_getchannel(job))[1]] = {'prog': split(make)[0],'lmake': a:lmake}
     echo s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
 endfunction
 
