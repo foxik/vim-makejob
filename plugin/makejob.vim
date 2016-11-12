@@ -18,10 +18,8 @@ endfunction
 
 function! s:JobHandler(channel) abort
     let is_lmake = s:jobinfo[split(a:channel)[1]]['lmake']
-    let output = []
-    while ch_status(a:channel, {'part': 'out'}) == 'buffered'
-        let output += [ch_read(a:channel)]
-    endwhile
+    let output = getbufline('MakeJob', 1, '$')
+    silent bdelete! MakeJob 
 
     " For reasons I don't understand, copying and re-writing
     " errorformat fixes a lot of parsing errors
@@ -51,7 +49,7 @@ function! s:JobHandler(channel) abort
         silent doautocmd QuickFixCmdPost make
     endif
 
-    echo s:jobinfo[split(a:channel)[1]]['prog']." ended with "
+    echomsg s:jobinfo[split(a:channel)[1]]['prog']." ended with "
                 \ .makeoutput." findings"
 endfunction
 
@@ -64,7 +62,8 @@ function! s:MakeJob(lmake, ...)
             let make = make.' '.a:1
         endif
     endif
-    let opts = { 'close_cb' : s:Function('s:JobHandler') }
+    let opts = { 'close_cb' : s:Function('s:JobHandler'),
+                \ 'out_io': 'buffer', 'out_name': 'MakeJob' }
 
     if a:lmake
         silent doautocmd QuickFixCmdPre lmake
@@ -76,9 +75,11 @@ function! s:MakeJob(lmake, ...)
         silent write
     endif
 
+    silent belowright pedit MakeJob
+
     let job = job_start(make, opts)
     let s:jobinfo[split(job_getchannel(job))[1]] = {'prog': split(make)[0],'lmake': a:lmake}
-    echo s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
+    echomsg s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
 endfunction
 
 command! -nargs=? MakeJob call s:MakeJob(0,<f-args>)

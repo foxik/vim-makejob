@@ -30,8 +30,14 @@ Most other plugin managers will resemble one of these two.
 ## Usage
 ### The Short Version
 Vim has `:make` and `:lmake`. Replace those calls with `:MakeJob` and
-`:LmakeJob`. Call it a day. If `:MakeJob` reports findings, use `:copen`
-to view them, and likewise `:lopen` for `:LmakeJob`.
+`:LmakeJob`. A buffer will open showing the command output, which will
+be parsed into the Quickfix or LocationList window when the job
+completes. Bask in your newfound freedom to do as you please in Vim
+while MakeJob runs.
+
+If `:MakeJob` reports findings, use `:copen` to view the QuickFix window
+(in the case of MakeJob), and likewise `:lopen` to open the LocationList
+for `:LmakeJob`.
 
 ### The Less Short Version
 Users of Syntastic may not be aware that Vim offers many of the same
@@ -49,9 +55,8 @@ they abstract away the work of remembering the `errorformat`, they're
 extendable, and many are already included in Vim. _MakeJob_ uses
 compilers.
 
-Also, it's possible to use `autocmd` to set the compiler of your choice
- automatically. Just for the sake of completeness, an example of that
- trick would like like this:
+It's also possible to use `autocmd` to set the compiler of your choice
+ automatically. An example of that trick would like like this:
 
 `autocmd! FileType python compiler pylint`
 
