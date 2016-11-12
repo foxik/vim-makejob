@@ -8,7 +8,7 @@ INTRODUCTION                                    *makejob* *vim-makejob*
 There are plenty of other build solutions for Vim and Vim, many of them
 offering feature sets that overlap with those the editor already offers.
 With minimalism as a goal, MakeJob implements asynchronous |:make| and
-|:lmake| for Vim in under 100 lines of Vimscript.
+|:lmake| for Vim in just over 100 lines of Vimscript.
 
 Here are your new make commands.
 

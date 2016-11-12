@@ -17,6 +17,9 @@ just over 100 lines of Vimscript.
    outlined in `:help make`. `autowrite`, `QuickFixCmdPre` and
    `QuickFixCmdPost` work as expected.
 
+## Requirements
+Vim 8 minimum compiled with `+job` and `+channel`.
+
 ## Installation
 ### Pathogen
 `cd ~/.vim/bundle`   

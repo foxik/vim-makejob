@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 0.3
+" VERSION: 1.0
 "
 if exists('g:loaded_makejob') || version < 800 || !has('job') ||
             \ !has('channel')
@@ -17,14 +17,17 @@ function! s:Function(name)
 endfunction
 
 function! s:JobHandler(channel) abort
-    let is_lmake = s:jobinfo[split(a:channel)[1]]['lmake']
-    let output = getbufline('MakeJob', 1, '$')
-    silent bdelete! MakeJob 
+    let job = remove(s:jobinfo, split(a:channel)[1])
+    let is_lmake = job['lmake']
+    let output = getbufline(job['outbufnr'], 1, '$')
+    silent execute job['outbufnr'].'bdelete!' 
 
     " For reasons I don't understand, copying and re-writing
     " errorformat fixes a lot of parsing errors
     let tempefm = &errorformat
     let &errorformat = tempefm
+
+    execute bufwinnr(job['srcbufnr']).'wincmd w'
 
     if is_lmake
         lgetexpr output
@@ -32,7 +35,9 @@ function! s:JobHandler(channel) abort
         cgetexpr output
     endif
 
-    let initqf = is_lmake ? getloclist(winnr()) : getqflist()
+    wincmd p
+
+    let initqf = is_lmake ? getloclist(bufwinnr(job['srcbufnr'])) : getqflist()
     let makeoutput = 0
     let idx = 0
     while idx < len(initqf)
@@ -49,12 +54,28 @@ function! s:JobHandler(channel) abort
         silent doautocmd QuickFixCmdPost make
     endif
 
-    echomsg s:jobinfo[split(a:channel)[1]]['prog']." ended with "
-                \ .makeoutput." findings"
+    echomsg job['prog']." ended with ".makeoutput." findings"
+endfunction
+
+function! s:CreateMakeJobWindow(prog)
+    silent execute 'belowright 10split '.a:prog
+    setlocal bufhidden=wipe buftype=nofile nobuflisted nolist
+    setlocal noswapfile nowrap nomodifiable
+    let bufnum = winbufnr(0)
+    wincmd p
+    return bufnum
 endfunction
 
 function! s:MakeJob(lmake, ...)
     let make = &makeprg
+    let prog = split(make)[0]
+    execute 'let openbufnr = bufnr("^'.prog.'$")'
+    if openbufnr != -1
+        echohl WarningMsg
+        echo prog.' already running'
+        echohl None
+        return
+    endif
     if a:0
         if a:1 == '%'
             let make = make.' '.bufname(a:1)
@@ -63,7 +84,8 @@ function! s:MakeJob(lmake, ...)
         endif
     endif
     let opts = { 'close_cb' : s:Function('s:JobHandler'),
-                \ 'out_io': 'buffer', 'out_name': 'MakeJob' }
+                \ 'out_io': 'buffer', 'out_name': prog,
+                \ 'out_modifiable': 0 }
 
     if a:lmake
         silent doautocmd QuickFixCmdPre lmake
@@ -75,10 +97,12 @@ function! s:MakeJob(lmake, ...)
         silent write
     endif
 
-    silent belowright pedit MakeJob
+    let outbufnr = s:CreateMakeJobWindow(prog)
 
     let job = job_start(make, opts)
-    let s:jobinfo[split(job_getchannel(job))[1]] = {'prog': split(make)[0],'lmake': a:lmake}
+    let s:jobinfo[split(job_getchannel(job))[1]] = 
+                \ { 'prog': prog,'lmake': a:lmake,
+                \   'outbufnr': outbufnr, 'srcbufnr': winbufnr(0) }
     echomsg s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
 endfunction
 
