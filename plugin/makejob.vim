@@ -72,7 +72,7 @@ function! s:MakeJob(lmake, ...)
     execute 'let openbufnr = bufnr("^'.prog.'$")'
     if openbufnr != -1
         echohl WarningMsg
-        echo prog.' already running'
+        echomsg prog.' already running'
         echohl None
         return
     endif
