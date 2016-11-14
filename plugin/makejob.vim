@@ -84,8 +84,12 @@ function! s:MakeJob(lmake, ...)
         endif
     endif
     let opts = { 'close_cb' : s:Function('s:JobHandler'),
-                \ 'out_io': 'buffer', 'out_name': prog,
-                \ 'out_modifiable': 0 }
+                \ 'out_io': 'buffer',
+                \ 'out_name': prog,
+                \ 'out_modifiable': 0,
+                \ 'err_io': 'buffer',
+                \ 'err_name': prog,
+                \ 'err_modifiable': 0}
 
     if a:lmake
         silent doautocmd QuickFixCmdPre lmake
