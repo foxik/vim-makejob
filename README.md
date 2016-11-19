@@ -15,7 +15,7 @@ just over 100 lines of Vimscript.
    findings.
 3. Complete feature parity with `:make` and `:lmake` per the steps
    outlined in `:help make`. `autowrite`, `QuickFixCmdPre` and
-   `QuickFixCmdPost` work as expected.
+   `QuickFixCmdPost`, and `!` work as expected.
 
 ## Requirements
 Vim 8 minimum compiled with `+job` and `+channel`.
@@ -58,24 +58,26 @@ they abstract away the work of remembering the `errorformat`, they're
 extendable, and many are already included in Vim. _MakeJob_ uses
 compilers.
 
-It's also possible to use `autocmd` to set the compiler of your choice
- automatically. An example of that trick would like like this:
+It's also possible to use the`after/ftplugin` folder to automatically
+configure compilers on a per-file-type basis. An example of that trick
+would be to add the following to `~/.vim/after/ftplugin/python.vim`:
 
-`autocmd! FileType python compiler pylint`
+`compiler pylint`
 
-Add that line to your `.vimrc` and you're good to go for Python files
-(assuming you have a pylint compiler which hey, if you need one I've
-[got you covered](http://github.com/djmoch/vim-compiler)).
+Add that and you're good to go for Python files (assuming you have a
+pylint compiler which hey, if you need one I've [got you
+covered](http://github.com/djmoch/vim-compiler)).
 
 Additionally, if you'd like _MakeJob_ to run a linter automatically when
-you write a file, then something like the following will to the trick.
+you write a file, then something like the following in your `.vimrc`
+will to the trick.
 
-`autocmd BufWritePost * :LmakeJob<CR>`
+`autocmd! BufWritePost * :LmakeJob! %<CR>`
 
-For more granular control, you can set this trigger on a file-type basis
-with something like the following:
+For more granular control, you can set this trigger on a per-file-type
+basis with something like the following:
 
-`autocmd BufWritePost *.py :LmakeJob<CR>`
+`autocmd! BufWritePost *.py :LmakeJob! %<CR>`
 
 ## Vim Documentation
 Part of the goal of _MakeJob_ is to minimize the size of the plugin by

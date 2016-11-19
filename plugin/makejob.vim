@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.0
+" VERSION: 1.1-dev
 "
 if exists('g:loaded_makejob') || version < 800 || !has('job') ||
             \ !has('channel')
@@ -20,7 +20,7 @@ function! s:JobHandler(channel) abort
     let job = remove(s:jobinfo, split(a:channel)[1])
     let is_lmake = job['lmake']
     let output = getbufline(job['outbufnr'], 1, '$')
-    silent execute job['outbufnr'].'bdelete!' 
+    silent execute job['outbufnr'].'bwipe!' 
 
     " For reasons I don't understand, copying and re-writing
     " errorformat fixes a lot of parsing errors
@@ -54,19 +54,23 @@ function! s:JobHandler(channel) abort
         silent doautocmd QuickFixCmdPost make
     endif
 
+    if job['cfirst']
+        cfirst
+    end
+
     echomsg job['prog']." ended with ".makeoutput." findings"
 endfunction
 
 function! s:CreateMakeJobWindow(prog)
     silent execute 'belowright 10split '.a:prog
-    setlocal bufhidden=wipe buftype=nofile nobuflisted nolist
+    setlocal bufhidden=hide buftype=nofile nobuflisted nolist
     setlocal noswapfile nowrap nomodifiable
     let bufnum = winbufnr(0)
     wincmd p
     return bufnum
 endfunction
 
-function! s:MakeJob(lmake, ...)
+function! s:MakeJob(lmake, bang, ...)
     let make = &makeprg
     let prog = split(make)[0]
     execute 'let openbufnr = bufnr("^'.prog.'$")'
@@ -77,11 +81,7 @@ function! s:MakeJob(lmake, ...)
         return
     endif
     if a:0
-        if a:1 == '%'
-            let make = make.' '.bufname(a:1)
-        else
-            let make = make.' '.a:1
-        endif
+        let make = make.' '.expand(a:1)
     endif
     let opts = { 'close_cb' : s:Function('s:JobHandler'),
                 \ 'out_io': 'buffer',
@@ -106,9 +106,10 @@ function! s:MakeJob(lmake, ...)
     let job = job_start(make, opts)
     let s:jobinfo[split(job_getchannel(job))[1]] = 
                 \ { 'prog': prog,'lmake': a:lmake,
-                \   'outbufnr': outbufnr, 'srcbufnr': winbufnr(0) }
+                \   'outbufnr': outbufnr, 'srcbufnr': winbufnr(0),
+                \   'cfirst': !a:bang }
     echomsg s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
 endfunction
 
-command! -nargs=? MakeJob call s:MakeJob(0,<f-args>)
-command! -nargs=? LmakeJob call s:MakeJob(1,<f-args>)
+command! -bang -nargs=? -complete=file MakeJob call s:MakeJob(0,<bang>0,<f-args>)
+command! -bang -nargs=? -complete=file LmakeJob call s:MakeJob(1,<bang>0,<f-args>)

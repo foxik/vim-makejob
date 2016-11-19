@@ -13,20 +13,21 @@ With minimalism as a goal, MakeJob implements asynchronous |:make| and
 Here are your new make commands.
 
                                                 *makejob-MakeJob*
-MakeJob [{bufname}]         Start a makejob on the specified buffer,
+MakeJob[!] [{bufname}]      Start a makejob on the specified buffer,
                             populating findings in the quickfix list.
                             |makeprg| and |errorformat| must be set before
                             MakeJob is called. {bufname}, if specified, is the
                             name of the file to make, and is appended to the
-                            end of |makeprg|. MakeJob currently only expands
-                            the special character % (see |_%|).
-                            |autowrite|, |QuickFixCmdPre|, and
-                            |QuickFixCmdPost| all work as expected.
-                            While the job runs, output will be directed
-                            to a preview buffer below the active buffer.
+                            end of |makeprg|. Ex special characters are
+                            expanded (see |cmdline-special|). |autowrite|,
+                            |QuickFixCmdPre|, and |QuickFixCmdPost| all
+                            work as expected. While the job runs, output
+                            will be directed to a preview buffer below
+                            the active buffer. If [!] is not given, the
+                            first error is jumped to.
 
                                                 *makejob-LmakeJob*
-LmakeJob [{bufname}]        Same as ":MakeJob", except the location list for
+LmakeJob[!] [{bufname}]     Same as ":MakeJob", except the location list for
                             the current window is used instead of the quickfix
                             list.
 
