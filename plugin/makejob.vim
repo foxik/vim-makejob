@@ -1,20 +1,15 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.0.2-dev
+" VERSION: 1.1
 "
 if exists('g:loaded_makejob') || version < 800 || !has('job') ||
-            \ !has('channel')
+            \ !has('channel') || !has('quickfix')
     finish
 endif
 let g:loaded_makejob = 1
 
 let s:jobinfo = {}
-
-function! s:Function(name)
-    return substitute(a:name, '^s:', matchstr(expand('<sfile>'), 
-                \'<SNR>\d\+_\ze[fF]unction$'),'')
-endfunction
 
 function! s:JobHandler(channel) abort
     let job = remove(s:jobinfo, split(a:channel)[1])
@@ -24,15 +19,27 @@ function! s:JobHandler(channel) abort
 
     " For reasons I don't understand, copying and re-writing
     " errorformat fixes a lot of parsing errors
-    let tempefm = &errorformat
-    let &errorformat = tempefm
+    let tempefm = job['grep'] ? &grepformat : &errorformat
+    if job['grep']
+        let &grepformat = tempefm
+    else
+        let &errorformat = tempefm
+    endif
 
     execute bufwinnr(job['srcbufnr']).'wincmd w'
 
     if is_lmake
-        lgetexpr output
+        if job['grepadd']
+            laddexpr output
+        else
+            lgetexpr output
+        endif
     else
-        cgetexpr output
+        if job['grepadd']
+            caddexpr output
+        else
+            cgetexpr output
+        end
     endif
 
     wincmd p
@@ -48,14 +55,22 @@ function! s:JobHandler(channel) abort
         let idx += 1
     endwhile
 
-    if is_lmake
-        silent doautocmd QuickFixCmdPost lmake
+    if job['grep']
+        if is_lmake
+            silent doautocmd QuickFixCmdPost lgrep
+        else
+            silent doautocmd QuickFixCmdPost grep
+        endif
     else
-        silent doautocmd QuickFixCmdPost make
-    endif
+        if is_lmake
+            silent doautocmd QuickFixCmdPost lmake
+        else
+            silent doautocmd QuickFixCmdPost make
+        endif
+    end
 
     if job['cfirst']
-        cfirst
+        silent! cfirst
     end
 
     echomsg job['prog']." ended with ".makeoutput." findings"
@@ -70,9 +85,10 @@ function! s:CreateMakeJobWindow(prog)
     return bufnum
 endfunction
 
-function! s:MakeJob(lmake, bang, ...)
-    let make = &makeprg
+function! s:MakeJob(grep, lmake, grepadd, bang, ...)
+    let make = a:grep ? &grepprg : &makeprg
     let prog = split(make)[0]
+    let internal_grep = make ==# 'internal' ? 1 : 0
     execute 'let openbufnr = bufnr("^'.prog.'$")'
     if openbufnr != -1
         echohl WarningMsg
@@ -81,35 +97,65 @@ function! s:MakeJob(lmake, bang, ...)
         return
     endif
     if a:0
-        let make = make.' '.expand(a:1)
+        if a:grep
+            if internal_grep
+                let make = 'vimgrep '.a:1
+            elseif make =~ '\$\*'
+                let make = [&shell, &shellcmdflag, substitute(make, '\$\*', a:1, 'g')]
+            else
+                let make = [&shell, &shellcmdflag, make.' '.a:1]
+            endif
+        else
+            let make = make.' '.expand(a:1)
+        end
     endif
-    let opts = { 'close_cb' : s:Function('s:JobHandler'),
+
+    let opts = { 'close_cb' : function('s:JobHandler'),
                 \ 'out_io': 'buffer',
                 \ 'out_name': prog,
                 \ 'out_modifiable': 0,
                 \ 'err_io': 'buffer',
                 \ 'err_name': prog,
-                \ 'err_modifiable': 0}
+                \ 'err_modifiable': 0,
+                \ 'in_io': 'null'}
 
-    if a:lmake
-        silent doautocmd QuickFixCmdPre lmake
+    if a:grep
+        if a:lmake
+            silent doautocmd QuickFixCmdPre lgrep
+        else
+            silent doautocmd QuickFixCmdPre grep
+        endif
     else
-        silent doautocmd QuickFixCmdPre make
+        if a:lmake
+            silent doautocmd QuickFixCmdPre lmake
+        else
+            silent doautocmd QuickFixCmdPre make
+        endif
     endif
 
-    if &autowrite
+    if &autowrite && !a:grep
         silent write
     endif
 
-    let outbufnr = s:CreateMakeJobWindow(prog)
+    if internal_grep
+        execute make
+        return
+    else
+        let outbufnr = s:CreateMakeJobWindow(prog)
 
-    let job = job_start(make, opts)
-    let s:jobinfo[split(job_getchannel(job))[1]] = 
-                \ { 'prog': prog,'lmake': a:lmake,
-                \   'outbufnr': outbufnr, 'srcbufnr': winbufnr(0),
-                \   'cfirst': !a:bang }
-    echomsg s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
+        let job = job_start(make, opts)
+        let s:jobinfo[split(job_getchannel(job))[1]] = 
+                    \ { 'prog': prog,'lmake': a:lmake,
+                    \   'outbufnr': outbufnr, 'srcbufnr': winbufnr(0),
+                    \   'cfirst': !a:bang, 'grep': a:grep,
+                    \    'grepadd': a:grepadd }
+        echomsg s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
+    end
 endfunction
 
-command! -bang -nargs=? -complete=file MakeJob call s:MakeJob(0,<bang>0,<f-args>)
-command! -bang -nargs=? -complete=file LmakeJob call s:MakeJob(1,<bang>0,<f-args>)
+command! -bang -nargs=* -complete=file MakeJob call s:MakeJob(0,0,0,<bang>0,<q-args>)
+command! -bang -nargs=* -complete=file LmakeJob call s:MakeJob(0,1,0,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file GrepJob call s:MakeJob(1,0,0,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file LgrepJob call s:MakeJob(1,1,0,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file GrepaddJob call s:MakeJob(1,0,1,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file LgrepaddJob call s:MakeJob(1,1,1,<bang>0,<q-args>)

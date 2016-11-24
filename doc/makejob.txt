@@ -5,18 +5,21 @@ License: MIT (see LICENSE file for details)
 
 INTRODUCTION                                    *makejob* *vim-makejob*
 
-There are plenty of other build solutions for Vim and Vim, many of them
-offering feature sets that overlap with those the editor already offers.
-With minimalism as a goal, MakeJob implements asynchronous |:make| and
-|:lmake| for Vim in just over 100 lines of Vimscript.
+This is a plugin for folks who think that Vim's quickfix feature is
+great, but who don't like how calls to |:make| and |:grep| freeze the
+editor. _MakeJob_ implements asynchronous versions of the builtin
+commands in just over 150 lines of Vimscript.
 
-Here are your new make commands.
+{only available in Vim version 8 or later}
+{only when compiled with the |channel|, |job|, and |quickfix| features}
+
+Here are your new quickfix commands.
 
                                                 *makejob-MakeJob*
-MakeJob[!] [{bufname}]      Start a makejob on the specified buffer,
+MakeJob[!] [{filename}]     Start a makejob on the specified buffer,
                             populating findings in the quickfix list.
                             |makeprg| and |errorformat| must be set before
-                            MakeJob is called. {bufname}, if specified, is the
+                            MakeJob is called. {filename}, if specified, is the
                             name of the file to make, and is appended to the
                             end of |makeprg|. Ex special characters are
                             expanded (see |cmdline-special|). |autowrite|,
@@ -27,9 +30,28 @@ MakeJob[!] [{bufname}]      Start a makejob on the specified buffer,
                             first error is jumped to.
 
                                                 *makejob-LmakeJob*
-LmakeJob[!] [{bufname}]     Same as ":MakeJob", except the location list for
+LmakeJob[!] [{filename}]    Same as ":MakeJob", except the location list for
                             the current window is used instead of the quickfix
                             list.
+
+                                                *makejob-GrepJob*
+GrepJob[!] {filename}       Run the grep command specified in |grepprg|
+                            and read into the quickfix list using
+                            |grepformat|. {filename} must be specified,
+                            but can contain wildcards.
+
+                                                *makejob-LgrepJob*
+LgrepJob[!] {filename}      Same as ":GrepJob", except the location list for
+                            the current window is used instead of the quickfix
+                            list.
+
+                                                *makejob-GrepaddJob*
+GrepaddJob[!] {filename}    Same as ":GrepJob", but add findings to the
+                            quickfix list without clearing it first.
+
+                                                *makejob-LgrepaddJob*
+GrepaddJob[!] {filename}    Same as ":LrepJob", but add findings to the
+                            location list without clearing it first.
 
 ABOUT                                           *makejob-about*
 

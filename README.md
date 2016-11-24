@@ -1,24 +1,23 @@
 # Vim MakeJob
 
-There are plenty of [other build
-solutions](http://github.com/scrooloose/syntastic) for
-[Vim](http://github.com/vim/vim), many of them offering feature sets
-that overlap with those the editor already offers. With minimalism as a
-goal, _MakeJob_ implements asynchronous `:make` and `:lmake` for Vim in
-just over 100 lines of Vimscript.
+This is a plugin for folks who think that Vim's quickfix feature is
+great, but who don't like how calls to `:make` and `:grep` freeze the
+editor. _MakeJob_ implements asynchronous versions of the builtin
+commands in just over 150 lines of Vimscript.
 
 ## Goals
-1. Implement a minimal solution for asynchronous `:make` and `:lmake`.
+1. Implement a minimal solution for asynchronous `:make` and `:grep`.
    No unnecessary features.
-2. Let Vim be Vim. Use compiler plugins to configure `makeprg` and
-   `errorformat`. Use the Quickfix or Location List window to view
-   findings.
-3. Complete feature parity with `:make` and `:lmake` per the steps
-   outlined in `:help make`. `autowrite`, `QuickFixCmdPre` and
-   `QuickFixCmdPost`, and `!` work as expected.
+2. Let Vim be Vim. Use `makeprg` and `errorformat` to configure
+   `:MakeJob` and the analogous grep options for `:GrepJob`. Use the
+   Quickfix or Location List window to view findings.
+3. Complete feature parity with `:make` and `:grep` per the steps
+   outlined in `:help quickfix`. `autowrite`, `QuickFixCmdPre` and
+   `QuickFixCmdPost`, and the bang operator work as expected.
 
 ## Requirements
-Vim 8 minimum compiled with `+job` and `+channel`.
+Vim 8 minimum compiled with `+job`, `+channel`, and of course
+`+quickfix`.
 
 ## Installation
 ### Pathogen
@@ -32,15 +31,30 @@ Most other plugin managers will resemble one of these two.
 
 ## Usage
 ### The Short Version
-Vim has `:make` and `:lmake`. Replace those calls with `:MakeJob` and
-`:LmakeJob`. A buffer will open showing the command output, which will
+Vim has `:make` and `:grep`. Replace those calls with `:MakeJob` and
+`:GrepJob`. A buffer will open showing the command output, which will
 be parsed into the Quickfix or LocationList window when the job
 completes. Bask in your newfound freedom to do as you please in Vim
-while MakeJob runs.
+while _MakeJob_ runs.
 
-If `:MakeJob` reports findings, use `:copen` to view the QuickFix window
-(in the case of MakeJob), and likewise `:lopen` to open the LocationList
+If _MakeJob_ reports findings, use `:copen` to view the QuickFix window
+(in the case of `:MakeJob`), and likewise `:lopen` to open the LocationList
 for `:LmakeJob`.
+
+Speaking of `:LmakeJob`, all of the LocationList complements to the
+Quickfix commands are there with _MakeJob_, bringing the full list of
+commands to:
+
+- `:MakeJob`
+- `:LmakeJob`
+- `:GrepJob`
+- `:LgrepJob`
+- `:GrepaddJob`
+- `:LgrepaddJob`
+
+All of which work like their builtin counterparts. Those last two are
+admittedly a bit longer than we would probably like, but if you grep a
+lot you'll probably want to set a mapping for it anyway (see below).
 
 ### The Less Short Version
 Users of Syntastic may not be aware that Vim offers many of the same
@@ -55,8 +69,8 @@ format of the errors to look for. This gets pretty hairy, and so
 we're all better off trying to avoid this in favor of the easy way:
 compiler plugins. Using a compiler plugin easy (ex: `:compiler javac`),
 they abstract away the work of remembering the `errorformat`, they're
-extendable, and many are already included in Vim. _MakeJob_ uses
-compilers.
+extendable, and many are already included in Vim. _MakeJob_ uses the
+same compiler plugins users of Vim will be familiar with.
 
 It's also possible to use the`after/ftplugin` folder to automatically
 configure compilers on a per-file-type basis. An example of that trick
@@ -78,6 +92,17 @@ For more granular control, you can set this trigger on a per-file-type
 basis with something like the following:
 
 `autocmd! BufWritePost *.py :LmakeJob! %<CR>`
+
+Grep is a powerful way to search through a directory structure for a
+keyword. I use it all the time, which is why I've added the following
+mapping to my `.vimrc`:
+
+`nnoremap <Leader>g :GrepJob!<Space>`
+
+## Gotchas
+If `grepprg` is set to `'internal'`, then Vim uses its own builtin grep
+command. This still works when you call `:GrepJob`, but not
+asynchronously.
 
 ## Vim Documentation
 Part of the goal of _MakeJob_ is to minimize the size of the plugin by
