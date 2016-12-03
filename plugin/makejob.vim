@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.1
+" VERSION: 1.1.1-dev
 "
 if exists('g:loaded_makejob') || version < 800 || !has('job') ||
             \ !has('channel') || !has('quickfix')
@@ -96,7 +96,8 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
         echohl None
         return
     endif
-    if a:0
+    "  Need to check for whitespace inputs as well as no input
+    if a:0 && (a:1 != '')
         if a:grep
             if internal_grep
                 let make = 'vimgrep '.a:1
@@ -106,7 +107,8 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
                 let make = [&shell, &shellcmdflag, make.' '.a:1]
             endif
         else
-            let make = make.' '.expand(a:1)
+            let trimmed_arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
+            let make = make.' '.expand(trimmed_arg)
         end
     endif
 
