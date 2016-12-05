@@ -85,8 +85,18 @@ function! s:CreateMakeJobWindow(prog)
     return bufnum
 endfunction
 
+function! s:Expand(input)
+    let split_input = split(a:input)
+    let expanded_input = []
+    for token in split_input
+        let expanded_input += [expand(token)]
+    endfor
+    return join(expanded_input)
+endfunction
+
 function! s:MakeJob(grep, lmake, grepadd, bang, ...)
     let make = a:grep ? &grepprg : &makeprg
+    let make = s:Expand(make)
     let prog = split(make)[0]
     let internal_grep = make ==# 'internal' ? 1 : 0
     execute 'let openbufnr = bufnr("^'.prog.'$")'
