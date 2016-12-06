@@ -11,165 +11,140 @@ let g:loaded_makejob = 1
 
 let s:jobinfo = {}
 
+function! s:InitAutocmd(lmake, grep, cmd)
+    let l:returnval = 'doautocmd QuickFixCmd'.a:cmd.' '
+    if a:grep
+        let l:returnval .= a:lmake ? 'lgrep' : 'grep'
+    else
+        let l:returnval .= a:lmake ? 'lmake' : 'make'
+    end
+    return l:returnval
+endfunction
+
 function! s:JobHandler(channel) abort
-    let job = remove(s:jobinfo, split(a:channel)[1])
-    let is_lmake = job['lmake']
+    let l:job = remove(s:jobinfo, split(a:channel)[1])
 
     " For reasons I don't understand, copying and re-writing
     " errorformat fixes a lot of parsing errors
-    let tempefm = job['grep'] ? &grepformat : &errorformat
-    if job['grep']
-        let &grepformat = tempefm
+    let l:tempefm = l:job['grep'] ? &grepformat : &errorformat
+    if l:job['grep']
+        let &grepformat = l:tempefm
     else
-        let &errorformat = tempefm
+        let &errorformat = l:tempefm
     endif
 
-    execute bufwinnr(job['srcbufnr']).'wincmd w'
+    execute bufwinnr(l:job['srcbufnr']).'wincmd w'
 
-    if is_lmake
-        let qfcmd = job['grepadd'] ? 'laddbuffer' : 'lgetbuffer'
+    if l:job['lmake']
+        let l:qfcmd = l:job['grepadd'] ? 'laddbuffer' : 'lgetbuffer'
     else
-        let qfcmd = job['grepadd'] ? 'caddbuffer' : 'cgetbuffer'
+        let l:qfcmd = l:job['grepadd'] ? 'caddbuffer' : 'cgetbuffer'
     endif
 
-    if bufwinnr(job['outbufnr'])
-        silent execute bufwinnr(job['outbufnr']).'close'
+    if bufwinnr(l:job['outbufnr'])
+        silent execute bufwinnr(l:job['outbufnr']).'close'
     endif
-    silent execute qfcmd.' '.job['outbufnr']
-    silent execute job['outbufnr'].'bwipe!' 
+    silent execute l:qfcmd.' '.l:job['outbufnr']
+    silent execute l:job['outbufnr'].'bwipe!' 
     wincmd p
 
-    let initqf = is_lmake ? getloclist(bufwinnr(job['srcbufnr'])) : getqflist()
-    let makeoutput = 0
-    let idx = 0
-    while idx < len(initqf)
-        let qfentry = initqf[idx]
-        if qfentry['valid']
-            let makeoutput += 1
+    let l:initqf = l:job['lmake'] ? getloclist(bufwinnr(job['srcbufnr'])) : getqflist()
+    let l:makeoutput = 0
+    let l:idx = 0
+    while l:idx < len(l:initqf)
+        let l:qfentry = l:initqf[l:idx]
+        if l:qfentry['valid']
+            let l:makeoutput += 1
         endif
-        let idx += 1
+        let l:idx += 1
     endwhile
 
-    if job['grep']
-        if is_lmake
-            silent doautocmd QuickFixCmdPost lgrep
-        else
-            silent doautocmd QuickFixCmdPost grep
-        endif
-    else
-        if is_lmake
-            silent doautocmd QuickFixCmdPost lmake
-        else
-            silent doautocmd QuickFixCmdPost make
-        endif
-    end
+    silent execute s:InitAutocmd(l:job['lmake'], l:job['grep'], 'Post')
 
-    if job['cfirst']
+    if l:job['cfirst']
         silent! cfirst
     end
 
-    echomsg job['prog']." ended with ".makeoutput." findings"
+    echomsg l:job['prog']." ended with ".l:makeoutput." findings"
 endfunction
 
 function! s:CreateMakeJobWindow(prog)
     silent execute 'belowright 10split '.a:prog
     setlocal bufhidden=hide buftype=nofile nobuflisted nolist
     setlocal noswapfile nowrap nomodifiable
-    let bufnum = winbufnr(0)
+    let l:bufnum = winbufnr(0)
     wincmd p
-    return bufnum
+    return l:bufnum
 endfunction
 
 function! s:Expand(input)
-    let split_input = split(a:input)
-    let expanded_input = []
-    for token in split_input
-        if expand(token) != ''
-            let expanded_input += [expand(token)]
+    let l:split_input = split(a:input)
+    let l:expanded_input = []
+    for l:token in l:split_input
+        if l:token != '$*' && expand(l:token) != ''
+            let l:expanded_input += [expand(l:token)]
         else
-            let expanded_input += [token]
+            let l:expanded_input += [l:token]
         endif
     endfor
-    return join(expanded_input)
+    return join(l:expanded_input)
 endfunction
 
 function! s:MakeJob(grep, lmake, grepadd, bang, ...)
-    let make = a:grep ? s:Expand(&grepprg) : s:Expand(&makeprg)
-    let prog = split(make)[0]
-    let internal_grep = make ==# 'internal' ? 1 : 0
-    execute 'let openbufnr = bufnr("^'.prog.'$")'
-    if openbufnr != -1
+    let l:make = a:grep ? s:Expand(&grepprg) : s:Expand(&makeprg)
+    let l:prog = split(l:make)[0]
+    let l:internal_grep = l:make ==# 'internal' ? 1 : 0
+    execute 'let l:openbufnr = bufnr("^'.l:prog.'$")'
+    if l:openbufnr != -1
         echohl WarningMsg
-        echomsg prog.' already running'
+        echomsg l:prog.' already running'
         echohl None
         return
     endif
     "  Need to check for whitespace inputs as well as no input
     if a:0 && (a:1 != '')
         if a:grep
-            if internal_grep
-                let make = 'vimgrep '.a:1
-            elseif make =~ '\$\*'
-                let make = [&shell, &shellcmdflag, substitute(make, '\$\*', a:1, 'g')]
+            if l:internal_grep
+                let l:make = 'vimgrep '.a:1
+            elseif l:make =~ '\$\*'
+                let l:make = [&shell, &shellcmdflag, substitute(l:make, '\$\*', a:1, 'g')]
             else
-                let make = [&shell, &shellcmdflag, make.' '.a:1]
+                let l:make = [&shell, &shellcmdflag, l:make.' '.a:1]
             endif
         else
-            let trimmed_arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
-            let make = make.' '.expand(trimmed_arg)
+            let l:trimmed_arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
+            let l:make = l:make.' '.expand(l:trimmed_arg)
         endif
-    else
-        echohl ErrorMsg
-        if a:lmake
-            let grepname = grepadd ? 'LgrepAddJob' : 'LgrepJob'
-        else
-            let grepname = grepadd ? 'GrepAddJob' : 'GrepJob'
-        endif
-        echomsg 'Passed only whitespace to '.grepname
-        echohl None
-        return
     endif
 
-    let opts = { 'close_cb' : function('s:JobHandler'),
+    let l:opts = { 'close_cb' : function('s:JobHandler'),
                 \ 'out_io': 'buffer',
-                \ 'out_name': prog,
+                \ 'out_name': l:prog,
                 \ 'out_modifiable': 0,
                 \ 'err_io': 'buffer',
-                \ 'err_name': prog,
+                \ 'err_name': l:prog,
                 \ 'err_modifiable': 0,
                 \ 'in_io': 'null'}
 
-    if a:grep
-        if a:lmake
-            silent doautocmd QuickFixCmdPre lgrep
-        else
-            silent doautocmd QuickFixCmdPre grep
-        endif
-    else
-        if a:lmake
-            silent doautocmd QuickFixCmdPre lmake
-        else
-            silent doautocmd QuickFixCmdPre make
-        endif
-    endif
+    silent execute s:InitAutocmd(a:lmake, a:grep, 'Pre')
 
     if &autowrite && !a:grep
         silent write
     endif
 
-    if internal_grep
-        execute make
+    if l:internal_grep
+        execute l:make
         return
     else
-        let outbufnr = s:CreateMakeJobWindow(prog)
+        let l:outbufnr = s:CreateMakeJobWindow(prog)
 
-        let job = job_start(make, opts)
-        let s:jobinfo[split(job_getchannel(job))[1]] = 
-                    \ { 'prog': prog,'lmake': a:lmake,
-                    \   'outbufnr': outbufnr, 'srcbufnr': winbufnr(0),
+        let l:job = job_start(l:make, l:opts)
+        let s:jobinfo[split(job_getchannel(l:job))[1]] = 
+                    \ { 'prog': l:prog,'lmake': a:lmake,
+                    \   'outbufnr': l:outbufnr, 'srcbufnr': winbufnr(0),
                     \   'cfirst': !a:bang, 'grep': a:grep,
                     \    'grepadd': a:grepadd }
-        echomsg s:jobinfo[split(job_getchannel(job))[1]]['prog'].' started'
+        echomsg s:jobinfo[split(job_getchannel(l:job))[1]]['prog'].' started'
     end
 endfunction
 
