@@ -81,7 +81,7 @@ function! s:Expand(input)
     let l:split_input = split(a:input)
     let l:expanded_input = []
     for l:token in l:split_input
-        if l:token != '$*' && expand(l:token) != ''
+        if l:token =~ '^%\|^#\|^\$' && l:token != '$*' && expand(l:token) != ''
             let l:expanded_input += [expand(l:token)]
         else
             let l:expanded_input += [l:token]
@@ -103,17 +103,14 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
     endif
     "  Need to check for whitespace inputs as well as no input
     if a:0 && (a:1 != '')
-        if a:grep
-            if l:internal_grep
-                let l:make = 'vimgrep '.a:1
-            elseif l:make =~ '\$\*'
-                let l:make = [&shell, &shellcmdflag, substitute(l:make, '\$\*', a:1, 'g')]
-            else
-                let l:make = [&shell, &shellcmdflag, l:make.' '.a:1]
-            endif
+        let l:trimmed_arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
+
+        if l:internal_grep
+            let l:make = 'vimgrep '.l:trimmed_arg
+        elseif l:make =~ '\$\*'
+            let l:make = [&shell, &shellcmdflag, substitute(l:make, '\$\*', l:trimmed_arg, 'g')]
         else
-            let l:trimmed_arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
-            let l:make = l:make.' '.expand(l:trimmed_arg)
+            let l:make = [&shell, &shellcmdflag, l:make.' '.l:trimmed_arg]
         endif
     endif
 
