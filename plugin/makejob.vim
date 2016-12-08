@@ -103,14 +103,24 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
     endif
     "  Need to check for whitespace inputs as well as no input
     if a:0 && (a:1 != '')
-        let l:trimmed_arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
+        let l:arg = substitute(a:1, '^\s\+\|\s\+$', '', 'g')
+
+        " Fix wonky Ex shell escape in Windows to work like :make
+        if l:arg =~ '^\\"' && (has('win32') || has('win64'))
+            let l:arg = substitute(l:arg, '\\"', '"', 'g')
+            let l:arg = substitute(l:arg, '\\ ', ' ', 'g')
+        endif
 
         if l:internal_grep
-            let l:make = 'vimgrep '.l:trimmed_arg
+            let l:make = 'vimgrep '.l:arg
         elseif l:make =~ '\$\*'
-            let l:make = [&shell, &shellcmdflag, substitute(l:make, '\$\*', l:trimmed_arg, 'g')]
+            let l:make = substitute(l:make, '\$\*', l:arg, 'g')
         else
-            let l:make = [&shell, &shellcmdflag, l:make.' '.l:trimmed_arg]
+            let l:make = l:make.' '.l:arg
+        endif
+
+        if a:grep
+            let l:make = [&shell, &shellcmdflag, l:make]
         endif
     endif
 
