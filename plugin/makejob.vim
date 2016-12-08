@@ -90,6 +90,22 @@ function! s:Expand(input)
     return join(l:expanded_input)
 endfunction
 
+" Credit to Tim Pope for the magic here
+function! s:Escape(str)
+    if has('win32') || has('win64')
+        if &shellxquote ==# '"'
+            return '"' . substitute(a:str, '"', '""', 'g') . '"'
+        else
+            let l:esc = exists('+shellxescape') ? &shellxescape : '"&|<>()@^'
+            return &shellxquote .
+                  \ substitute(a:str, '['.l:esc.']', '^&', 'g') .
+                  \ get({'(': ')', '"(': ')"'}, &shellxquote, &shellxquote)
+        endif
+    else
+        return a:str
+    endif
+endfunction
+
 function! s:MakeJob(grep, lmake, grepadd, bang, ...)
     let l:make = a:grep ? s:Expand(&grepprg) : s:Expand(&makeprg)
     let l:prog = split(l:make)[0]
@@ -119,9 +135,7 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
             let l:make = l:make.' '.l:arg
         endif
 
-        if a:grep
-            let l:make = [&shell, &shellcmdflag, l:make]
-        endif
+        let l:make = [&shell, &shellcmdflag, s:Escape(l:make)]
     endif
 
     let l:opts = { 'close_cb' : function('s:JobHandler'),
