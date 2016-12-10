@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.1.1-dev
+" VERSION: 1.1.1
 "
 if exists('g:loaded_makejob') || version < 800 || !has('job') ||
             \ !has('channel') || !has('quickfix')
