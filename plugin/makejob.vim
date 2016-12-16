@@ -3,12 +3,12 @@
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
 " VERSION: 1.1.2-dev
 "
-if exists('g:loaded_makejob') || version < 800 || !has('job') ||
-            \ !has('channel') || !has('quickfix')
+if exists('g:loaded_makejob') || !has('job') || !has('channel') || !has('quickfix') || &cp
     finish
 endif
 let g:loaded_makejob = 1
-
+let s:save_cpo = &cpo
+set cpo&vim
 let s:jobinfo = {}
 
 function! s:InitAutocmd(lmake, grep, cmd)
@@ -161,3 +161,5 @@ command! -bang -nargs=+ -complete=file GrepJob call s:MakeJob(1,0,0,<bang>0,<q-a
 command! -bang -nargs=+ -complete=file LgrepJob call s:MakeJob(1,1,0,<bang>0,<q-args>)
 command! -bang -nargs=+ -complete=file GrepaddJob call s:MakeJob(1,0,1,<bang>0,<q-args>)
 command! -bang -nargs=+ -complete=file LgrepaddJob call s:MakeJob(1,1,1,<bang>0,<q-args>)
+let &cpo = s:save_cpo
+unlet s:save_cpo

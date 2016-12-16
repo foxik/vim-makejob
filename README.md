@@ -16,8 +16,7 @@ commands in just over 150 lines of Vimscript.
    `QuickFixCmdPost`, and the bang operator work as expected.
 
 ## Requirements
-Vim 8 minimum compiled with `+job`, `+channel`, and of course
-`+quickfix`.
+Vim compiled with `+job`, `+channel`, and of course `+quickfix`.
 
 ## Installation
 ### Pathogen

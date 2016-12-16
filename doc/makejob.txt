@@ -10,7 +10,6 @@ great, but who don't like how calls to |:make| and |:grep| freeze the
 editor. _MakeJob_ implements asynchronous versions of the builtin
 commands in just over 150 lines of Vimscript.
 
-{only available in Vim version 8 or later}
 {only when compiled with the |channel|, |job|, and |quickfix| features}
 
 Here are your new quickfix commands.
