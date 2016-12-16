@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.1.1
+" VERSION: 1.1.2-dev
 "
 if exists('g:loaded_makejob') || version < 800 || !has('job') ||
             \ !has('channel') || !has('quickfix')
@@ -81,7 +81,7 @@ function! s:Expand(input)
     let l:split_input = split(a:input)
     let l:expanded_input = []
     for l:token in l:split_input
-        if l:token =~ '^%\|^#\|^\$' && l:token != '$*' && expand(l:token) != ''
+        if l:token =~ '^\\\?%\|^\\\?#\|^\\\?\$' && l:token != '$*' && expand(l:token) != ''
             let l:expanded_input += [expand(l:token)]
         else
             let l:expanded_input += [l:token]
