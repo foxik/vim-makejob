@@ -3,7 +3,10 @@
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
 " VERSION: 1.1.2-dev
 "
-if exists('g:loaded_makejob') || !has('job') || !has('channel') || !has('quickfix') || &cp
+if exists('g:loaded_makejob') || &cp
+    finish
+endif
+if !has('job') || !has('channel') || !has('quickfix')
     finish
 endif
 let g:loaded_makejob = 1
@@ -48,7 +51,8 @@ function! s:JobHandler(channel) abort
     silent execute l:job['outbufnr'].'bwipe!' 
     wincmd p
 
-    let l:initqf = l:job['lmake'] ? getloclist(bufwinnr(job['srcbufnr'])) : getqflist()
+    let l:initqf = l:job['lmake'] ? getloclist(bufwinnr(
+                \ job['srcbufnr'])) : getqflist()
     let l:makeoutput = 0
     let l:idx = 0
     while l:idx < len(l:initqf)
@@ -81,7 +85,8 @@ function! s:Expand(input)
     let l:split_input = split(a:input)
     let l:expanded_input = []
     for l:token in l:split_input
-        if l:token =~ '^\\\?%\|^\\\?#\|^\\\?\$' && l:token != '$*' && expand(l:token) != ''
+        if l:token =~ '^\\\?%\|^\\\?#\|^\\\?\$' && l:token != '$*' &&
+                    \ expand(l:token) != ''
             let l:expanded_input += [expand(l:token)]
         else
             let l:expanded_input += [l:token]
