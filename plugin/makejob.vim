@@ -130,13 +130,13 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
     endif
 
     let l:opts = { 'close_cb' : function('s:JobHandler'),
-                \ 'out_io': 'buffer',
-                \ 'out_name': l:prog,
-                \ 'out_modifiable': 0,
-                \ 'err_io': 'buffer',
-                \ 'err_name': l:prog,
-                \ 'err_modifiable': 0,
-                \ 'in_io': 'null'}
+                \  'out_io': 'buffer',
+                \  'out_name': l:prog,
+                \  'out_modifiable': 0,
+                \  'err_io': 'buffer',
+                \  'err_name': l:prog,
+                \  'err_modifiable': 0,
+                \  'in_io': 'null'}
 
     silent execute s:InitAutocmd(a:lmake, a:grep, 'Pre')
 
@@ -153,18 +153,26 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
         let l:job = job_start(l:make, l:opts)
         let s:jobinfo[split(job_getchannel(l:job))[1]] = 
                     \ { 'prog': l:prog,'lmake': a:lmake,
-                    \   'outbufnr': l:outbufnr, 'srcbufnr': winbufnr(0),
+                    \   'outbufnr': l:outbufnr,
+                    \   'srcbufnr': winbufnr(0),
                     \   'cfirst': !a:bang, 'grep': a:grep,
-                    \    'grepadd': a:grepadd }
-        echomsg s:jobinfo[split(job_getchannel(l:job))[1]]['prog'].' started'
+                    \   'grepadd': a:grepadd }
+        echomsg s:jobinfo[split(job_getchannel(l:job))[1]]['prog']
+                    \ .' started'
     end
 endfunction
 
-command! -bang -nargs=* -complete=file MakeJob call s:MakeJob(0,0,0,<bang>0,<q-args>)
-command! -bang -nargs=* -complete=file LmakeJob call s:MakeJob(0,1,0,<bang>0,<q-args>)
-command! -bang -nargs=+ -complete=file GrepJob call s:MakeJob(1,0,0,<bang>0,<q-args>)
-command! -bang -nargs=+ -complete=file LgrepJob call s:MakeJob(1,1,0,<bang>0,<q-args>)
-command! -bang -nargs=+ -complete=file GrepaddJob call s:MakeJob(1,0,1,<bang>0,<q-args>)
-command! -bang -nargs=+ -complete=file LgrepaddJob call s:MakeJob(1,1,1,<bang>0,<q-args>)
+command! -bang -nargs=* -complete=file MakeJob
+            \ call s:MakeJob(0,0,0,<bang>0,<q-args>)
+command! -bang -nargs=* -complete=file LmakeJob
+            \ call s:MakeJob(0,1,0,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file GrepJob
+            \ call s:MakeJob(1,0,0,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file LgrepJob
+            \ call s:MakeJob(1,1,0,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file GrepaddJob
+            \ call s:MakeJob(1,0,1,<bang>0,<q-args>)
+command! -bang -nargs=+ -complete=file LgrepaddJob
+            \ call s:MakeJob(1,1,1,<bang>0,<q-args>)
 let &cpo = s:save_cpo
 unlet s:save_cpo
