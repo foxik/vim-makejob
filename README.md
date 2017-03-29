@@ -99,9 +99,12 @@ mapping to my `.vimrc`:
 `nnoremap <Leader>g :GrepJob!<Space>`
 
 ## Gotchas
-If `grepprg` is set to `'internal'`, then Vim uses its own builtin grep
-command. This still works when you call `:GrepJob`, but not
-asynchronously.
+1. If `grepprg` is set to `'internal'`, then Vim uses its own builtin grep
+   command. This still works when you call `:GrepJob`, but not
+   asynchronously.
+2. For simplicity, only one instance of a given executable can run at
+   once. You can run `make` and `pylint`, but you can't run two
+   instances of `make`.
 
 ## Vim Documentation
 Part of the goal of _MakeJob_ is to minimize the size of the plugin by
