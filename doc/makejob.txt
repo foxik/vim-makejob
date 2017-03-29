@@ -1,4 +1,4 @@
-*makejob.txt* Minimal, asynchronous make and lmake for Vim
+*makejob.txt* Minimal, asynchronous quickfix commands for Vim 8
 
 Author: Daniel Moch <daniel@danielmoch.com>
 License: MIT (see LICENSE file for details)
@@ -7,7 +7,7 @@ INTRODUCTION                                    *makejob* *vim-makejob*
 
 This is a plugin for folks who think that Vim's quickfix feature is
 great, but who don't like how calls to |:make| and |:grep| freeze the
-editor. _MakeJob_ implements asynchronous versions of the builtin
+editor. MakeJob implements asynchronous versions of the builtin
 commands in just over 150 lines of Vimscript.
 
 {only when compiled with the |channel|, |job|, and |quickfix| features}
@@ -49,7 +49,7 @@ GrepaddJob[!] {filename}    Same as ":GrepJob", but add findings to the
                             quickfix list without clearing it first.
 
                                                 *makejob-LgrepaddJob*
-GrepaddJob[!] {filename}    Same as ":LrepJob", but add findings to the
+LgrepaddJob[!] {filename}   Same as ":GrepaddJob", but add findings to the
                             location list without clearing it first.
 
 ABOUT                                           *makejob-about*
