@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.1.2
+" VERSION: 1.2-dev
 "
 if exists('g:loaded_makejob') || &cp
     finish
