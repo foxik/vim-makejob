@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.2-dev
+" VERSION: 1.2
 "
 if exists('g:loaded_makejob') || &cp
     finish
@@ -13,6 +13,10 @@ let g:loaded_makejob = 1
 let s:save_cpo = &cpo
 set cpo&vim
 let s:jobinfo = {}
+
+if !exists('g:makejob_hide_preview_window')
+    let g:makejob_hide_preview_window = 0
+endif
 
 function! s:InitAutocmd(lmake, grep, cmd)
     let l:returnval = 'doautocmd QuickFixCmd'.a:cmd.' '
@@ -44,7 +48,7 @@ function! s:JobHandler(channel) abort
         let l:qfcmd = l:job['grepadd'] ? 'caddbuffer' : 'cgetbuffer'
     endif
 
-    if bufwinnr(l:job['outbufnr'])
+    if bufwinnr(l:job['outbufnr']) && l:job['outbufhidden'] == 0
         silent execute bufwinnr(l:job['outbufnr']).'close'
     endif
     silent execute l:qfcmd.' '.l:job['outbufnr']
@@ -77,7 +81,11 @@ function! s:CreateMakeJobWindow(prog)
     setlocal bufhidden=hide buftype=nofile nobuflisted nolist
     setlocal noswapfile nowrap nomodifiable
     let l:bufnum = winbufnr(0)
-    wincmd p
+    if g:makejob_hide_preview_window
+        hide
+    else
+        wincmd p
+    end
     return l:bufnum
 endfunction
 
@@ -156,7 +164,8 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
                     \   'outbufnr': l:outbufnr,
                     \   'srcbufnr': winbufnr(0),
                     \   'cfirst': !a:bang, 'grep': a:grep,
-                    \   'grepadd': a:grepadd }
+                    \   'grepadd': a:grepadd,
+                    \   'outbufhidden': g:makejob_hide_preview_window }
         echomsg s:jobinfo[split(job_getchannel(l:job))[1]]['prog']
                     \ .' started'
     end

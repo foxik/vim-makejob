@@ -98,13 +98,19 @@ mapping to my `.vimrc`:
 
 `nnoremap <Leader>g :GrepJob!<Space>`
 
+Finally, if you find the preview windows distracting or otherwise
+disruptive to your workflow, you can hide it with the following, global
+setting:
+
+`let g:makejob_hide_preview_window = 1`
+
 ## Gotchas
 1. If `grepprg` is set to `'internal'`, then Vim uses its own builtin grep
    command. This still works when you call `:GrepJob`, but not
    asynchronously.
 2. For simplicity, only one instance of a given executable can run at
    once. You can run `make` and `pylint`, but you can't run two
-   instances of `make`.
+   instances of `make` simultaneously.
 
 ## Vim Documentation
 Part of the goal of _MakeJob_ is to minimize the size of the plugin by

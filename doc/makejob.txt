@@ -3,57 +3,76 @@
 Author: Daniel Moch <daniel@danielmoch.com>
 License: MIT (see LICENSE file for details)
 
-INTRODUCTION                                    *makejob* *vim-makejob*
+                                MakeJob  *makejob* *vim-makejob*
 
 This is a plugin for folks who think that Vim's quickfix feature is
 great, but who don't like how calls to |:make| and |:grep| freeze the
 editor. MakeJob implements asynchronous versions of the builtin
 commands in just over 150 lines of Vimscript.
 
+1. Commands                              |makejob-commands|
+2. Configuration                         |makejob-configuration|
+3. About                                 |makejob-about|
+
 {only when compiled with the |channel|, |job|, and |quickfix| features}
+
+=============================================================================
+1. MakeJob Commands                     *makejob-commands*
 
 Here are your new quickfix commands.
 
-                                                *makejob-MakeJob*
+                                        *makejob-MakeJob* *:MakeJob*
 MakeJob[!] [{filename}]     Start a makejob on the specified buffer,
                             populating findings in the quickfix list.
                             |makeprg| and |errorformat| must be set before
-                            MakeJob is called. {filename}, if specified, is the
-                            name of the file to make, and is appended to the
-                            end of |makeprg|. Ex special characters are
+                            MakeJob is called. {filename}, if specified, is
+                            the name of the file to make, and is appended to
+                            the end of |makeprg|. Ex special characters are
                             expanded (see |cmdline-special|). |autowrite|,
-                            |QuickFixCmdPre|, and |QuickFixCmdPost| all
-                            work as expected. While the job runs, output
-                            will be directed to a preview buffer below
-                            the active buffer. If [!] is not given, the
-                            first error is jumped to.
+                            |QuickFixCmdPre|, and |QuickFixCmdPost| all work
+                            as expected. While the job runs, output will be
+                            directed to a preview buffer below the active
+                            buffer. If [!] is not given, the first error is
+                            jumped to.
 
-                                                *makejob-LmakeJob*
+                                        *makejob-LmakeJob* *:LmakeJob*
 LmakeJob[!] [{filename}]    Same as ":MakeJob", except the location list for
                             the current window is used instead of the quickfix
                             list.
 
-                                                *makejob-GrepJob*
-GrepJob[!] {filename}       Run the grep command specified in |grepprg|
-                            and read into the quickfix list using
-                            |grepformat|. {filename} must be specified,
-                            but can contain wildcards.
+                                        *makejob-GrepJob* *:GrepJob*
+GrepJob[!] {filename}       Run the grep command specified in |grepprg| and
+                            read into the quickfix list using |grepformat|.
+                            {filename} must be specified, but can contain
+                            wildcards.
 
-                                                *makejob-LgrepJob*
+                                        *makejob-LgrepJob* *:LgrepJob*
 LgrepJob[!] {filename}      Same as ":GrepJob", except the location list for
                             the current window is used instead of the quickfix
                             list.
 
-                                                *makejob-GrepaddJob*
+                                        *makejob-GrepaddJob* *:GrepaddJob*
 GrepaddJob[!] {filename}    Same as ":GrepJob", but add findings to the
                             quickfix list without clearing it first.
 
-                                                *makejob-LgrepaddJob*
+                                        *makejob-LgrepaddJob* *:LgrepaddJob*
 LgrepaddJob[!] {filename}   Same as ":GrepaddJob", but add findings to the
                             location list without clearing it first.
 
-ABOUT                                           *makejob-about*
+=============================================================================
+2. CONFIGURATION                        *makejob-configuration*
+
+                                        *g:makejob_hide_preview_window*
+                                        number (default 0)
+g:makejob_hide_preview_window       Hide the preview window during execution.
+                                    Default (0) is to show the preview window.
+                                    Set to 1 to hide it.
+
+=============================================================================
+3. ABOUT                                *makejob-about*
 
 More details can be found in README.md or by navigating to:
 
     https://github.com/djmoch/vim-makejob
+
+vim:tw=78:ts=8:ft=help:norl:
