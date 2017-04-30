@@ -59,6 +59,21 @@ GrepaddJob[!] {filename}    Same as ":GrepJob", but add findings to the
 LgrepaddJob[!] {filename}   Same as ":GrepaddJob", but add findings to the
                             location list without clearing it first.
 
+                                        *makejob-MakeJobStop* *:MakeJobStop*
+MakeJobStop [{MakeJob}]     Use this command to cancel a running MakeJob.
+    
+                            Without an argument, the command will cancel a
+                            running MakeJob in one of two ways:
+                                1. If the current buffer spawned a MakeJob,
+                                   that job will be stopped.
+                                2. If the current buffer is displaying MakeJob
+                                output, that job will stopped.
+    
+                            MakeJobStop also accepts as an argument the name
+                            of the MakeJob to stop (e.g., ":MakeJobStop
+                            make"). Command completion can be used to make
+                            finding the name easier.
+
 =============================================================================
 2. CONFIGURATION                        *makejob-configuration*
 

@@ -1,7 +1,7 @@
 "
 " TITLE:   VIM-MAKEJOB
 " AUTHOR:  Daniel Moch <daniel@danielmoch.com>
-" VERSION: 1.2
+" VERSION: 1.3-dev
 "
 if exists('g:loaded_makejob') || &cp
     finish
@@ -26,6 +26,31 @@ function! s:InitAutocmd(lmake, grep, cmd)
         let l:returnval .= a:lmake ? 'lmake' : 'make'
     end
     return l:returnval
+endfunction
+
+function! s:JobStop(...) abort
+    if a:0
+       if bufexists(a:1)
+           execute bufwinnr(a:1).'wincmd w'
+           if exists('b:makejob')
+               if !job_stop(b:makejob)
+                   echoerr 'Failed to stop current MakeJob'
+               end
+           else
+               echoerr 'Provided buffer is not a MakeJob'
+           end
+           wincmd p
+       else
+           echoerr 'Provided MakeJob does not exist'
+       endif
+    elseif exists('b:makejob')
+       let l:job = s:jobinfo[split(job_getchannel(b:makejob))[1]]
+       if !job_stop(b:makejob)
+           echoerr 'Failed to stop '.l:job['prog']
+       endif
+    else
+        echoerr 'Not in a MakeJob buffer, and none specified'
+    endif
 endfunction
 
 function! s:JobHandler(channel) abort
@@ -76,9 +101,9 @@ function! s:JobHandler(channel) abort
     echomsg l:job['prog']." ended with ".l:makeoutput." findings"
 endfunction
 
-function! s:CreateMakeJobWindow(prog)
+function! s:CreateMakeJobBuffer(prog)
     silent execute 'belowright 10split '.a:prog
-    setlocal bufhidden=hide buftype=nofile nobuflisted nolist
+    setlocal bufhidden=hide buftype=nofile buflisted nolist
     setlocal noswapfile nowrap nomodifiable
     let l:bufnum = winbufnr(0)
     if g:makejob_hide_preview_window
@@ -103,7 +128,7 @@ function! s:Expand(input)
     return join(l:expanded_input)
 endfunction
 
-function! s:MakeJob(grep, lmake, grepadd, bang, ...)
+function! s:MakeJob(grep, lmake, grepadd, bang, ...) abort
     let l:make = a:grep ? s:Expand(&grepprg) : s:Expand(&makeprg)
     let l:prog = split(l:make)[0]
     let l:internal_grep = l:make ==# 'internal' ? 1 : 0
@@ -148,7 +173,7 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
 
     silent execute s:InitAutocmd(a:lmake, a:grep, 'Pre')
 
-    if &autowrite && !a:grep
+    if &autowrite && !empty(bufname('%')) && !a:grep
         silent write
     endif
 
@@ -156,32 +181,47 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...)
         execute l:make
         return
     else
-        let l:outbufnr = s:CreateMakeJobWindow(prog)
+        let l:outbufnr = s:CreateMakeJobBuffer(prog)
 
-        let l:job = job_start(l:make, l:opts)
-        let s:jobinfo[split(job_getchannel(l:job))[1]] = 
+        let l:makejob = job_start(l:make, l:opts)
+        let b:makejob = l:makejob
+        let s:jobinfo[split(job_getchannel(b:makejob))[1]] = 
                     \ { 'prog': l:prog,'lmake': a:lmake,
                     \   'outbufnr': l:outbufnr,
                     \   'srcbufnr': winbufnr(0),
                     \   'cfirst': !a:bang, 'grep': a:grep,
-                    \   'grepadd': a:grepadd,
+                    \   'grepadd': a:grepadd, 'job': b:makejob,
                     \   'outbufhidden': g:makejob_hide_preview_window }
-        echomsg s:jobinfo[split(job_getchannel(l:job))[1]]['prog']
+        echomsg s:jobinfo[split(job_getchannel(b:makejob))[1]]['prog']
                     \ .' started'
+
+        execute bufwinnr(l:outbufnr).'wincmd w'
+        let b:makejob = l:makejob
+        wincmd p
     end
 endfunction
 
+function! s:MakeJobCompletion(arglead, cmdline, cursorpos)
+    let l:return = []
+    for l:key in keys(s:jobinfo)
+        let l:return += [s:jobinfo[l:key]['prog']]
+    endfor
+    return l:return
+endfunction
+
 command! -bang -nargs=* -complete=file MakeJob
-            \ call s:MakeJob(0,0,0,<bang>0,<q-args>)
+            \ call <sid>MakeJob(0,0,0,<bang>0,<q-args>)
 command! -bang -nargs=* -complete=file LmakeJob
-            \ call s:MakeJob(0,1,0,<bang>0,<q-args>)
+            \ call <sid>MakeJob(0,1,0,<bang>0,<q-args>)
 command! -bang -nargs=+ -complete=file GrepJob
-            \ call s:MakeJob(1,0,0,<bang>0,<q-args>)
+            \ call <sid>MakeJob(1,0,0,<bang>0,<q-args>)
 command! -bang -nargs=+ -complete=file LgrepJob
-            \ call s:MakeJob(1,1,0,<bang>0,<q-args>)
+            \ call <sid>MakeJob(1,1,0,<bang>0,<q-args>)
 command! -bang -nargs=+ -complete=file GrepaddJob
-            \ call s:MakeJob(1,0,1,<bang>0,<q-args>)
+            \ call <sid>MakeJob(1,0,1,<bang>0,<q-args>)
 command! -bang -nargs=+ -complete=file LgrepaddJob
-            \ call s:MakeJob(1,1,1,<bang>0,<q-args>)
+            \ call <sid>MakeJob(1,1,1,<bang>0,<q-args>)
+command! -nargs=? -complete=customlist,<sid>MakeJobCompletion
+            \ MakeJobStop call <sid>JobStop(<f-args>)
 let &cpo = s:save_cpo
 unlet s:save_cpo

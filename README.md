@@ -36,15 +36,16 @@ be parsed into the Quickfix or LocationList window when the job
 completes. Bask in your newfound freedom to do as you please in Vim
 while _MakeJob_ runs.
 
-If _MakeJob_ reports findings, use `:copen` to view the QuickFix window
+If _MakeJob_ reports findings, use `:copen` to view the Quickfix window
 (in the case of `:MakeJob`), and likewise `:lopen` to open the LocationList
-for `:LmakeJob`.
+for `:LmakeJob`. There's also `:MakeJobStop` to stop a running MakeJob.
 
 Speaking of `:LmakeJob`, all of the LocationList complements to the
 Quickfix commands are there with _MakeJob_, bringing the full list of
 commands to:
 
 - `:MakeJob`
+- `:MakeJobStop`
 - `:LmakeJob`
 - `:GrepJob`
 - `:LgrepJob`
