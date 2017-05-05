@@ -78,6 +78,8 @@ function! s:JobHandler(channel) abort
     endif
     silent execute l:qfcmd.' '.l:job['outbufnr']
     silent execute l:job['outbufnr'].'bwipe!' 
+    unlet b:makejob
+    nunmap <buffer> <C-c>
     wincmd p
 
     let l:initqf = l:job['lmake'] ? getloclist(bufwinnr(
@@ -105,6 +107,7 @@ function! s:CreateMakeJobBuffer(prog)
     silent execute 'belowright 10split '.a:prog
     setlocal bufhidden=hide buftype=nofile buflisted nolist
     setlocal noswapfile nowrap nomodifiable
+    nmap <buffer> <C-c> :MakeJobStop<CR>
     let l:bufnum = winbufnr(0)
     if g:makejob_hide_preview_window
         hide
@@ -198,6 +201,7 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...) abort
         execute bufwinnr(l:outbufnr).'wincmd w'
         let b:makejob = l:makejob
         wincmd p
+        nmap <buffer> <C-c> :MakeJobStop<CR>
     end
 endfunction
 

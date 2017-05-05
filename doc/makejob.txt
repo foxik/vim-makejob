@@ -8,7 +8,7 @@ License: MIT (see LICENSE file for details)
 This is a plugin for folks who think that Vim's quickfix feature is
 great, but who don't like how calls to |:make| and |:grep| freeze the
 editor. MakeJob implements asynchronous versions of the builtin
-commands in just over 150 lines of Vimscript.
+commands in just a couple hundred lines of Vimscript.
 
 1. Commands                              |makejob-commands|
 2. Configuration                         |makejob-configuration|
@@ -22,7 +22,7 @@ commands in just over 150 lines of Vimscript.
 Here are your new quickfix commands.
 
                                         *makejob-MakeJob* *:MakeJob*
-MakeJob[!] [{filename}]     Start a makejob on the specified buffer,
+MakeJob[!] [{filename}]     Start a MakeJob on the specified buffer,
                             populating findings in the quickfix list.
                             |makeprg| and |errorformat| must be set before
                             MakeJob is called. {filename}, if specified, is
@@ -34,6 +34,11 @@ MakeJob[!] [{filename}]     Start a makejob on the specified buffer,
                             directed to a preview buffer below the active
                             buffer. If [!] is not given, the first error is
                             jumped to.
+
+                            <C-c> can be used in normal mode to cancel a
+                            running MakeJob, provided the current buffer
+                            either spawned it or is showing its output.
+                            Otherwise |:MakeJobStop| can be used.
 
                                         *makejob-LmakeJob* *:LmakeJob*
 LmakeJob[!] [{filename}]    Same as ":MakeJob", except the location list for

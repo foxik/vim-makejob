@@ -3,7 +3,7 @@
 This is a plugin for folks who think that Vim's quickfix feature is
 great, but who don't like how calls to `:make` and `:grep` freeze the
 editor. _MakeJob_ implements asynchronous versions of the builtin
-commands in just over 150 lines of Vimscript.
+commands in just a couple hundred lines of Vimscript.
 
 ## Goals
 1. Implement a minimal solution for asynchronous `:make` and `:grep`.
@@ -38,7 +38,10 @@ while _MakeJob_ runs.
 
 If _MakeJob_ reports findings, use `:copen` to view the Quickfix window
 (in the case of `:MakeJob`), and likewise `:lopen` to open the LocationList
-for `:LmakeJob`. There's also `:MakeJobStop` to stop a running MakeJob.
+for `:LmakeJob`. If the current buffer is showing the output of a
+running MakeJob, or if it spawned a running MakeJob, then `<C-c>` stops
+it. There's also `:MakeJobStop` to stop an arbitrary MakeJob (with
+command completion).
 
 Speaking of `:LmakeJob`, all of the LocationList complements to the
 Quickfix commands are there with _MakeJob_, bringing the full list of
