@@ -65,7 +65,10 @@ function! s:JobHandler(channel) abort
         let &errorformat = l:tempefm
     endif
 
+    let l:curwinnr = winnr()
     execute bufwinnr(l:job['srcbufnr']).'wincmd w'
+    unlet b:makejob
+    nunmap <buffer> <C-c>
 
     if l:job['lmake']
         let l:qfcmd = l:job['grepadd'] ? 'laddbuffer' : 'lgetbuffer'
@@ -78,9 +81,7 @@ function! s:JobHandler(channel) abort
     endif
     silent execute l:qfcmd.' '.l:job['outbufnr']
     silent execute l:job['outbufnr'].'bwipe!' 
-    unlet b:makejob
-    nunmap <buffer> <C-c>
-    wincmd p
+    execute l:curwinnr.'wincmd w'
 
     let l:initqf = l:job['lmake'] ? getloclist(bufwinnr(
                 \ job['srcbufnr'])) : getqflist()
