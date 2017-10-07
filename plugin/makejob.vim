@@ -178,7 +178,7 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...) abort
     silent execute s:InitAutocmd(a:lmake, a:grep, 'Pre')
 
     if &autowrite && !empty(bufname('%')) && !a:grep
-        silent write
+        silent update
     endif
 
     if l:internal_grep
