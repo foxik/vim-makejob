@@ -80,6 +80,11 @@ function! s:JobHandler(channel) abort
         silent execute bufwinnr(l:job['outbufnr']).'close'
     endif
     silent execute l:qfcmd.' '.l:job['outbufnr']
+    if l:job['lmake']
+      call setloclist(0, [], 'a', {'title':l:job['prog']})
+    else
+      call setqflist([], 'a', {'title':l:job['prog']})
+    endif
     silent execute l:job['outbufnr'].'bwipe!' 
     execute l:curwinnr.'wincmd w'
 
