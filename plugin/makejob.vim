@@ -98,7 +98,14 @@ function! s:JobHandler(channel) abort
     silent execute s:InitAutocmd(l:job['lmake'], l:job['grep'], 'Post')
 
     if l:job['cfirst']
-        silent! cfirst
+        if l:makeoutput > 0
+            if l:job['lmake']
+              lopen
+            else
+              copen
+            endif
+            execute l:curwinnr.'wincmd w'
+        end
     end
 
     echomsg l:job['prog']." ended with ".l:makeoutput." findings"
