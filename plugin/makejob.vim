@@ -111,7 +111,12 @@ function! s:JobHandler(channel) abort
     echomsg l:job['prog']." ended with ".l:makeoutput." findings"
 endfunction
 
-function! s:CreateMakeJobBuffer(prog)
+function! s:CreateMakeJobBuffer(prog, lmake)
+    if a:lmake
+      lclose
+    else
+      cclose
+    endif
     silent execute 'belowright 10split '.a:prog
     setlocal bufhidden=hide buftype=nofile buflisted nolist
     setlocal noswapfile nowrap nomodifiable
@@ -192,7 +197,7 @@ function! s:MakeJob(grep, lmake, grepadd, bang, ...) abort
         execute l:make
         return
     else
-        let l:outbufnr = s:CreateMakeJobBuffer(prog)
+        let l:outbufnr = s:CreateMakeJobBuffer(prog, a:lmake)
 
         let l:makejob = job_start(l:make, l:opts)
         let b:makejob = l:makejob
